@@ -7,6 +7,7 @@
 //
 
 import UIKit
+import AVFoundation
 
 class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavigationControllerDelegate {
 
@@ -19,7 +20,6 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
             imagePicker.delegate = self;
             imagePicker.sourceType = .photoLibrary;
             imagePicker.allowsEditing = true;
-            print("This boi works!");
             
         }
     }
@@ -29,7 +29,7 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
             imagePicker.delegate = self;
             imagePicker.sourceType = .camera;
             imagePicker.allowsEditing = false;
-            print("This works!");
+            
             //self.presentedViewController(imagePicker, animated: true, completion: nil);
         }
     }
@@ -51,9 +51,31 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
         }
     }
     
+    
+    // Some variables handling the audio recording
+    var recordingButton: UIButton!
+    var recordingSession: AVAudioSession!
+    var audioRecorder : AVAudioRecorder!
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view, typically from a nib.
+        recordingSession = AVAudioSession.sharedInstance();
+        do{
+            try recordingSession.setCategory(AVAudioSession.Category.playAndRecord);
+            try recordingSession.setActive(true)
+            recordingSession.requestRecordPermission(){
+                [unowned self] allowed in DispatchQueue.main.async {
+                    if allowed{
+                        self.loadRecordingUI();
+                    } else {
+                        print("failed to load recordings!");
+                    }
+                }
+            }
+        } catch {
+            print("failed to load recordings!");
+        }
     }
     
     
