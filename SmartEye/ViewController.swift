@@ -9,7 +9,7 @@
 import UIKit
 import AVFoundation
 
-class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavigationControllerDelegate {
+class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavigationControllerDelegate, AVAudioRecorderDelegate {
 
     
     @IBOutlet weak var chosenImage: UIImageView!
@@ -62,7 +62,8 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
         // Do any additional setup after loading the view, typically from a nib.
         recordingSession = AVAudioSession.sharedInstance();
         do{
-            try recordingSession.setCategory(AVAudioSession.Category.playAndRecord);
+            //try recordingSession.setCategory(AVAudioSession.Category.playAndRecord);
+            try recordingSession.setCategory(AVAudioSession.Category.playAndRecord, mode: .default, options: [])
             try recordingSession.setActive(true)
             recordingSession.requestRecordPermission(){
                 [unowned self] allowed in DispatchQueue.main.async {
@@ -78,7 +79,61 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
         }
     }
     
+    func loadRecordingUI(){
+        recordingButton = UIButton(frame(CGRect(x: 64, y: 64, width: 128, height: 64))); 
+        recordingButton.setTitle("Tap to record", for: .normal);
+        recordingButton.titleLabel?.font = UIFont.preferredFont(forTextStyle: UIFont.TextStyle.title1);
+        recordingButton.addTarget(self, action: #selector(recordTapped), for: .touchUpInside);
+        view.addSubview(recordingButton)
+    }
     
+    func startRecording(){
+        let audioFileName = getDocumentDirectory().appendingPathComponent("recording.m4a");
+        let settings = [AVFormatIDKey: Int(kAudioFormatMPEG4AAC),
+                        AVSampleRateKey: 12000,
+                        AVNumberOfChannelsKey: 1,
+                        AVEncoderAudioQualityKey: AVAudioQuality.high.rawValue];
+        
+        do{
+            audioRecorder = try AVAudioRecorder(url: audioFileName, settings: settings);
+            audioRecorder.delegate = self;
+            audioRecorder.record();
+            
+            recordingButton.setTitle("Tap to stop recording", for: .normal);
+        }
+        catch{
+            finishRecording(success: false);
+        }
+    }
+    
+    func getDocumentDirectory() -> URL{
+        let paths = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask);
+        return paths[0];
+    }
+    
+    func finishRecording(success: Bool){
+        audioRecorder.stop();
+        audioRecorder = nil;
+        if success{
+            recordingButton.setTitle("Tap to re-record", for: .normal);
+        } else {
+            recordingButton.setTitle("Tap to record", for: .normal);
+        }
+    }
+    
+    @objc func recordTapped(){ // the @objc tag makes the function accessible in Objective-C as well, even if marked private.
+        if audioRecorder == nil{
+            startRecording();
+        } else {
+            finishRecording(success: true);
+        }
+    }
+    
+    func audioRecorderDidFinishRecording(_ recorder: AVAudioRecorder, successfully flag: Bool) {
+        if !flag{
+            finishRecording(success: false);
+        }
+    }
 
 
 }
