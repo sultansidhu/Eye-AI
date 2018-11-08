@@ -6,19 +6,7 @@ target 'SmartEye' do
   use_frameworks!
 
   # Pods for SmartEye
-  # [START base_dependencies]
-pod 'Firebase/Core'
-pod 'Firebase/MLVision'
-# [END base_dependencies]
-pod 'Firebase/MLVisionBarcodeModel'
-pod 'Firebase/MLVisionFaceModel'
-pod 'Firebase/MLVisionLabelModel'
-pod 'Firebase/MLVisionTextModel'
-
-# target 'MLVisionExample' do
-# end
-#
-# target 'MLVisionExampleObjc' do
-# end
+  pod 'Firebase/Core'
+  pod 'Firebase/MLVision'
 
 end
